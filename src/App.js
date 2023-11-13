@@ -1,15 +1,56 @@
 import './App.css';
-import { useState } from 'react';
+import s from "./App.module.css";
+import { useState,useEffect } from 'react';
 
 function Counter({title,initValue}) {  
   const [count,setCount] = useState(initValue);
-
-  const up = () => setCount(count+1);
-  const down = () => setCount(count-1);
+  const [step,setStep] = useState(1);
+  const up = () => {
+    fetch("http://localhost:9999/counter", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ value: count + step }),
+    })
+    .then((response)=>response.json())
+    .then((result)=> {
+      setCount(result.value);
+    });    
+  };
+  const down = () => {
+    fetch("http://localhost:9999/counter", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ value: count - step }),
+    })
+    .then((response)=>response.json())
+    .then((result)=> {
+      setCount(result.value);
+    });    
+  };
+  const change = (evt) => {    
+    setStep(Number(evt.target.value));
+  };
+  const rootStyle = {
+    backgroundColor : '#eee',
+    padding:10
+  };
+  useEffect(()=>{
+    fetch('http://localhost:9999/counter')
+    .then(response => response.json())
+    .then((result) => {
+      setCount(result.value);
+    });
+  },[]);
   
-  return <><h1>{title}</h1>
-  <button onClick={up}>+</button>
-  <button onClick={down}>-</button> {count}</>
+  return <div style={rootStyle}><h1>{title}</h1>
+  <button className={s.btn} onClick={up}>+</button>
+  <button className={s.btn} onClick={down}>-</button>
+  <input type='text' value={step} onChange={change}></input>
+  <span className='output'>{count}</span></div>
 }
 
 function App() {
